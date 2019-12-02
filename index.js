@@ -8,10 +8,21 @@ var path = require('chromedriver').path;
 (async function example() {
   let driver = await new Builder().forBrowser('chrome').build();
   try {
-    await driver.get('https://antecedentes.policia.gov.co:7005/WebJudicial/antecedentes.xhtml');
-    await driver.findElement(By.name('cedulaInput')).sendKeys('80076057');
-    // await driver.wait(until.titleIs('jidsandijnasdipjnasdoijas - Google Search'), 1000);
+    await driver.get('https://antecedentes.policia.gov.co:7005/WebJudicial/index.xhtml');
+    await driver.wait(until.elementLocated(By.name('aceptaOption')), 10000);
+    await driver.executeScript(
+    	()=>{ el = document.querySelector("#aceptaOption\\:0");
+    	el.setAttribute("checked","checked");
+    	PrimeFaces.ab({s:"continuarBtn",onco:function(xhr,status,args){window.location.href='/WebJudicial/antecedentes.xhtml';}});
+    	}
+    )
+
+    	
   } finally {
     // await driver.quit();
   }
 })();
+
+// var el = document.querySelector("#aceptaOption\\:0")
+// el.setAttribute("checked","checked")
+// PrimeFaces.ab({s:"continuarBtn",onco:function(xhr,status,args){window.location.href='/WebJudicial/antecedentes.xhtml';}});
