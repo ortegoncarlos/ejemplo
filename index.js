@@ -16,6 +16,7 @@ var path = require('chromedriver').path;
     	PrimeFaces.ab({s:"continuarBtn",onco:function(xhr,status,args){window.location.href='/WebJudicial/antecedentes.xhtml';}});
     	}
     )
+    driver.wait(until.elementLocated(By.name('cedulaInput')), 10000).sendKeys("80076057");
 
     	
   } finally {
