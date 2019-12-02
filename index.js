@@ -22,7 +22,3 @@ var path = require('chromedriver').path;
     // await driver.quit();
   }
 })();
-
-// var el = document.querySelector("#aceptaOption\\:0")
-// el.setAttribute("checked","checked")
-// PrimeFaces.ab({s:"continuarBtn",onco:function(xhr,status,args){window.location.href='/WebJudicial/antecedentes.xhtml';}});
