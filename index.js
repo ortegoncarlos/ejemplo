@@ -8,10 +8,10 @@ var path = require('chromedriver').path;
 (async function example() {
   let driver = await new Builder().forBrowser('chrome').build();
   try {
-    await driver.get('http://www.google.com/ncr');
-    await driver.findElement(By.name('q')).sendKeys('jidsandijnasdipjnasdoijas', Key.RETURN);
-    await driver.wait(until.titleIs('jidsandijnasdipjnasdoijas - Google Search'), 1000);
+    await driver.get('https://antecedentes.policia.gov.co:7005/WebJudicial/antecedentes.xhtml');
+    await driver.findElement(By.name('cedulaInput')).sendKeys('80076057');
+    // await driver.wait(until.titleIs('jidsandijnasdipjnasdoijas - Google Search'), 1000);
   } finally {
-    await driver.quit();
+    // await driver.quit();
   }
 })();
