@@ -43,12 +43,9 @@ let main = async () =>{
     await driver.sleep(2000)
     await driver.findElement(By.id('capimg')).takeScreenshot().then(
     	function(image, err) {
-        require('fs').writeFile( captcha_screen , image, 'base64', function(err) {
-            console.log('error', err);
-        });
+    	solvecaptcha(image,(capthcasolved)=>{console.log('send',capthcasolved);captcha_obj=capthcasolved})
     })
-    await solvecaptcha('./'+captcha_screen,(capthcasolved)=>{console.log('send',capthcasolved);captcha_obj=capthcasolved})
-    await driver.sleep(1000).then(
+    await driver.sleep(15000).then(
     	()=>{client.get_captcha(captcha_obj.captcha,(capthcasolved)=>{console.log('response 1',capthcasolved);captcha_obj=capthcasolved})}
     	)
     await driver.sleep(1000)
