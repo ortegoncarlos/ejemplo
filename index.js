@@ -65,10 +65,9 @@ let main = async () =>{
     		await client.get_captcha(captcha_obj.captcha, (capthcasolved)=>{console.log('response 1',capthcasolved);captcha_obj=capthcasolved})
     	})
     await driver.sleep(1000)
-
     await driver.findElement(By.id('textcaptcha')).sendKeys(captcha_obj.text)
     await driver.findElement(By.id('j_idt20')).click()
-    await driver.wait(until.elementLocated(By.id('antecedentes')), 1200)
+    await driver.wait(until.elementLocated(By.id('form')), 1200)
     .then(
     	 () => {
 	    	driver.executeScript(
@@ -78,13 +77,16 @@ let main = async () =>{
 	    	  )
 	      }
 	    )
-	await driver.takeScreenshot().then(
-		(image, err) => {
-	        require('fs').writeFile(screen, image, 'base64', function(err) {
-	            console.log(err);
-	        });
-	    }
-	);
+    await driver.sleep(1000).then(()=>{
+		driver.takeScreenshot().then(
+			(image, err) => {
+		        require('fs').writeFile(screen, image, 'base64', function(err) {
+		            console.log(err);
+		        });
+		    }
+		);
+    })
+	
 
 	// let warnmsg = await driver.findElement(By.id('j_idt10'))
  //    driver.wait(warnmsg.elementTextContains('Captcha. El texto ingresado debe corresponder al de la imagen.'), 25000)
