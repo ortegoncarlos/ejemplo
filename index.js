@@ -42,6 +42,7 @@ let main = async () =>{
 
     await driver.wait(until.elementLocated(By.id('capimg')), 1200)
     .then(()=>{
+    	// Ejecutar script en el navegador para quitar el loading
     	driver.executeScript(
 	    	()=>{ el = document.querySelector(".preloader");
 	    		el.parentNode.removeChild(el);
@@ -49,6 +50,7 @@ let main = async () =>{
     	  )
     }).then(
     ()=>{
+    	// Busca el elemento y le toma un pantallazo.
     	driver.findElement(By.id('capimg')).takeScreenshot()
 	    .then(
 	    	async function(image, err) {
@@ -87,7 +89,7 @@ let main = async () =>{
 		);
     })
 	
-
+// TODO arreglar este error
 	// let warnmsg = await driver.findElement(By.id('j_idt10'))
  //    driver.wait(warnmsg.elementTextContains('Captcha. El texto ingresado debe corresponder al de la imagen.'), 25000)
  //    .then(()=>{
