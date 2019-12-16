@@ -11,7 +11,7 @@ let driver = new Builder().forBrowser('chrome').build();
 // Declara la funcion que va a hacer todo
 let main = async () =>{
   // Declara la Variables que se van a usar
-  let cedulainput = "19304877"
+  let cedulainput = "1032425150"
   let screen = `${Math.floor(Math.random() * 100000001)}-${cedulainput}.jpg`;
 
   // aqui en try va a pasar todo y en catch si se encuentra un error vuelve a empezar
