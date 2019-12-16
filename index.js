@@ -10,25 +10,27 @@ const client = new dbc.SocketClient("ortegon.carlos@gmail.com", "nm80vdBUE4OX26g
 
 client.get_balance((balance) => {})
 
+// Crea el chrome
 let driver = new Builder().forBrowser('chrome').build();
 
-
-const solvecaptcha = (imagen, cb) => {
+// Declara funcion de resolver captcha
+const solveCaptcha = (imagen, cb) => {
   console.log('iniciando solvecpathca',imagen)  
   client.upload({captcha:imagen,extra: {}}, cb)
 };
 
-// client.get_captcha('77021442',(capthcasolved)=>{console.log('capthcasolved',capthcasolved);captcha_obj=capthcasolved})
 
+// Declara la funcion que va a hacer todo
 let main = async () =>{
-  let captcha_obj=null;
-  let captcha_screen = `${Math.floor(Math.random() * 100000001)}.jpg`;
+  // Declara la Variables que se van a usar
+  let captcha_obj={};
+  let screen = `${Math.floor(Math.random() * 100000001)}.jpg`;
   let cpatcha_id = null;
-  
+  // aqui en try va a pasar todo y en catch si se encuentra un error vuelve a empezar
   try {
     await driver.get('https://antecedentes.policia.gov.co:7005/WebJudicial/index.xhtml');
-    await driver.sleep(1000)
-    await driver.wait(until.elementLocated(By.name('aceptaOption')), 1200)
+    
+    await driver.wait(until.elementLocated(By.name('aceptaOption')), 200)
     .then(()=>{
     	driver.executeScript(
 	    	()=>{ el = document.querySelector("#aceptaOption\\:0");
@@ -38,29 +40,68 @@ let main = async () =>{
     	  )
     })
 
-    await driver.wait(until.elementLocated(By.name('cedulaInput')), 1200)
-    	.sendKeys("80076057")
-    await driver.sleep(2000)
-    await driver.findElement(By.id('capimg')).takeScreenshot().then(
-    	function(image, err) {
-    	solvecaptcha(image,(capthcasolved)=>{console.log('send',capthcasolved);captcha_obj=capthcasolved})
-    })
-    await driver.sleep(15000).then(
-    	()=>{client.get_captcha(captcha_obj.captcha,(capthcasolved)=>{console.log('response 1',capthcasolved);captcha_obj=capthcasolved})}
-    	)
+    await driver.wait(until.elementLocated(By.id('capimg')), 1200)
+    .then(()=>{
+    	driver.executeScript(
+	    	()=>{ el = document.querySelector(".preloader");
+	    		el.parentNode.removeChild(el);
+	    	}
+    	  )
+    }).then(
+    ()=>{
+    	driver.findElement(By.id('capimg')).takeScreenshot()
+	    .then(
+	    	async function(image, err) {
+		    	await solveCaptcha(image,(capthcasolved)=>{console.log('send',capthcasolved);captcha_obj=capthcasolved})
+		    })
+	    }) 
+    let cedula = await driver.findElement(By.name('cedulaInput'))
+    cedula.clear()
+    cedula.sendKeys("80076057")
+    await driver.sleep(15000)
+    .then(
+    	async ()=>{
+    		console.log('before check',captcha_obj)
+    		await client.get_captcha(captcha_obj.captcha, (capthcasolved)=>{console.log('response 1',capthcasolved);captcha_obj=capthcasolved})
+    	})
     await driver.sleep(1000)
 
     await driver.findElement(By.id('textcaptcha')).sendKeys(captcha_obj.text)
     await driver.findElement(By.id('j_idt20')).click()
+    await driver.wait(until.elementLocated(By.id('antecedentes')), 1200)
+    .then(
+    	 () => {
+	    	driver.executeScript(
+		    	()=>{ el = document.querySelector(".preloader");
+		    		el.parentNode.removeChild(el);
+		    	}
+	    	  )
+	      }
+	    )
+	await driver.takeScreenshot().then(
+		(image, err) => {
+	        require('fs').writeFile(screen, image, 'base64', function(err) {
+	            console.log(err);
+	        });
+	    }
+	);
+
+	// let warnmsg = await driver.findElement(By.id('j_idt10'))
+ //    driver.wait(warnmsg.elementTextContains('Captcha. El texto ingresado debe corresponder al de la imagen.'), 25000)
+ //    .then(()=>{
+	
+	// 	exception = new ExceptionCaptcha("Captcha no valido");
+ //  		throw exception;
+    	
+ //    })
     setTimeout(async()=>{ await driver.quit()},10000)
 	
-	// 	.sendKeys("80076057")
-    
-    // console.log('1',captcha_obj)
+
     
 
   } catch (error) {
-  	console.log("======================================ERROR========",error)
+  	// Como paso algo se reinicia
+  	console.log("========================ERROR======================",error)
   	main();
   }
   finally {
@@ -74,5 +115,10 @@ let main = async () =>{
 })();
 
 
+// Errores personalizadas
+function ExceptionCaptcha(mensaje) {
+   this.mensaje = mensaje;
+   this.nombre = "ExceptionCaptcha";
+}
 
 
