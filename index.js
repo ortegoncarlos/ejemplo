@@ -59,7 +59,7 @@ let main = async () =>{
 	    }) 
     let cedula = await driver.findElement(By.name('cedulaInput'))
     cedula.clear()
-    cedula.sendKeys("80076057")
+    cedula.sendKeys("19304877")
     await driver.sleep(15000)
     .then(
     	async ()=>{
