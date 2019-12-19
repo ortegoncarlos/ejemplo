@@ -1,3 +1,4 @@
+const CONSTANTS = require("./constants/globalConstants"); 
 const {Builder, By, Key, until} = require('selenium-webdriver');
 const file_path = require('path');
 
@@ -6,7 +7,7 @@ require('chromedriver');
 var fs = require('fs');
 //Call Cpatcha
 dbc = require("./deathbycaptcha/deathbycaptcha.js");
-const client = new dbc.SocketClient("ortegon.carlos@gmail.com", "nm80vdBUE4OX26gB2UyL");
+const client = new dbc.SocketClient(CONSTANTS.DBC_EMAIL, CONSTANTS.DBC_KEY);
 
 client.get_balance((balance) => {})
 
@@ -24,11 +25,11 @@ const solveCaptcha = (imagen, cb) => {
 let main = async () =>{
   // Declara la Variables que se van a usar
   let captcha_obj={};
-  let screen = `${Math.floor(Math.random() * 100000001)}.jpg`;
+  //let screen = `${Math.floor(Math.random() * 100000001)}.jpg`;
   let cpatcha_id = null;
   // aqui en try va a pasar todo y en catch si se encuentra un error vuelve a empezar
   try {
-    await driver.get('https://antecedentes.policia.gov.co:7005/WebJudicial/index.xhtml');
+    await driver.get(CONSTANTS.URL_ANTECEDENTES_POLICIA);
     
     await driver.wait(until.elementLocated(By.name('aceptaOption')), 200)
     .then(()=>{
@@ -54,17 +55,23 @@ let main = async () =>{
     	driver.findElement(By.id('capimg')).takeScreenshot()
 	    .then(
 	    	async function(image, err) {
-		    	await solveCaptcha(image,(capthcasolved)=>{console.log('send',capthcasolved);captcha_obj=capthcasolved})
+		    	await solveCaptcha(image,(capthcasolved)=>{
+					console.log('send',capthcasolved);
+					captcha_obj=capthcasolved}
+					)
+					console.log("CPT COOL",captcha_obj)
 		    })
 	    }) 
-    let cedula = await driver.findElement(By.name('cedulaInput'))
+	let cedula = await driver.findElement(By.name('cedulaInput'))
     cedula.clear()
-    cedula.sendKeys("19304877")
-    await driver.sleep(15000)
+    cedula.sendKeys(CONSTANTS.TEST_CEDULA)
+	await driver.sleep(15000)
     .then(
     	async ()=>{
     		console.log('before check',captcha_obj)
-    		await client.get_captcha(captcha_obj.captcha, (capthcasolved)=>{console.log('response 1',capthcasolved);captcha_obj=capthcasolved})
+    		await client.get_captcha(captcha_obj.captcha, (capthcasolved)=>{
+				console.log('response 1',capthcasolved);
+				captcha_obj=capthcasolved})
     	})
     await driver.sleep(1000)
     await driver.findElement(By.id('textcaptcha')).sendKeys(captcha_obj.text)
@@ -82,7 +89,7 @@ let main = async () =>{
     await driver.sleep(1000).then(()=>{
 		driver.takeScreenshot().then(
 			(image, err) => {
-		        require('fs').writeFile(screen, image, 'base64', function(err) {
+		        require('fs').writeFile("./imgs/antecedentesPolicia/" + CONSTANTS.TEST_CEDULA + "-"+Date.now()+".jpg", image, 'base64', function(err) {
 		            console.log(err);
 		        });
 		    }
@@ -106,7 +113,7 @@ let main = async () =>{
   } catch (error) {
   	// Como paso algo se reinicia
   	console.log("========================ERROR======================",error)
-  	main();
+  	//main();
   }
   finally {
   	// setTimeout(async()=>{ await driver.quit()},2000)
