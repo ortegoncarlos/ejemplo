@@ -54,6 +54,10 @@ let main = async () =>{
     	driver.findElement(By.id('capimg')).takeScreenshot()
 	    .then(
 	    	async function(image, err) {
+				fs.writeFile('test.png', image, 'base64', function(error) {
+					if(error!=null)
+						console.log('Error occured while saving screenshot' + error)
+				})
 		    	await solveCaptcha(image,(capthcasolved)=>{console.log('send',capthcasolved);captcha_obj=capthcasolved})
 		    })
 	    }) 
