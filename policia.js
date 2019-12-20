@@ -63,11 +63,11 @@ async function completedForm (captchaText = null) {
                             /*driver.sleep(1000).then(() => {
                                 driver.executeScript("document.getElementById('textcaptcha').value = '"+e+"'");
                             })*/
-                            // de esta manera no recarda
+                            // de esta manera no recarga la pagina
                             driver.findElement(By.id('textcaptcha')).sendKeys('esto no tiene sentido');
                             driver.sleep(1000);
                             driver.findElement(By.id('textcaptcha')).clear();
-                            // no entiendo por que si recarga
+                            // no entiendo por que si recarga la pagina
                             driver.findElement(By.id('textcaptcha')).sendKeys(e.toString());
                         });
                     })
