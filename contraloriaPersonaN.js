@@ -17,7 +17,7 @@ let main = async () => {
     let screen = `${Math.floor(Math.random() * 100000001)}.jpg`;
     // aqui en try va a pasar todo y en catch si se encuentra un error vuelve a empezar
     try {
-        await driver.get(CONSTANTS.URL_CONTRALORIA_PERSONA_NATURAL);
+        await driver.get(CONSTANTS.URL_CONTRALORIA_PERSONA_NATURAL);+
 
         //Seleccionar cédula
         await driver.findElements(By.css("option")).then(async function (elements) {
@@ -61,8 +61,8 @@ let main = async () => {
                                                                     if (text.includes("Verificar")) {
                                                                         //console.log("Con Verificar / Pidiendo Recaptcha")
                                                                         reject("Con Verificar, pedir nuevo captcha")
-                                                                    }else{
-                                                                        if(i === elements.length-1){
+                                                                    } else {
+                                                                        if (i === elements.length - 1) {
                                                                             resolve("Imagen aceptada.")
                                                                         }
                                                                     }
