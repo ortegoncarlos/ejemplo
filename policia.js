@@ -59,16 +59,12 @@ async function completedForm (captchaText = null) {
                     driver.findElement(By.id('capimg')).takeScreenshot().then(image => {
                         const visionApi = new Vision(image, 'buffer');
                         visionApi.getText().then(e => {
-                            console.log(e.toString())
+                            console.log(e)
                             /*driver.sleep(1000).then(() => {
                                 driver.executeScript("document.getElementById('textcaptcha').value = '"+e+"'");
                             })*/
-                            // de esta manera no recarga la pagina
-                            driver.findElement(By.id('textcaptcha')).sendKeys('esto no tiene sentido');
-                            driver.sleep(1000);
-                            driver.findElement(By.id('textcaptcha')).clear();
                             // no entiendo por que si recarga la pagina
-                            driver.findElement(By.id('textcaptcha')).sendKeys(e.toString());
+                            driver.findElement(By.id('textcaptcha')).sendKeys(e);
                         });
                     })
                 }
