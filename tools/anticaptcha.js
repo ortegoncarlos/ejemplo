@@ -11,6 +11,7 @@ class CaptchaV2 {
     }
 
     createTaskIdApi () {
+        const axios = require('axios');
 
         return axios.post('https://api.anti-captcha.com/createTask', {
             "clientKey": "e2513609e3b73ad96181a9370e517bb6",
@@ -31,13 +32,13 @@ class CaptchaV2 {
     }
 
     getKeyCaptchaResolved (taskId) {
+        const axios = require('axios');
+
         return axios.post('https://api.anti-captcha.com/getTaskResult', {
             "clientKey":"e2513609e3b73ad96181a9370e517bb6",
             "taskId": taskId
         })
             .then((res) => {
-                // console.log(`statusCode: ${res.status}`)
-                // console.log(res.data)
                 return res.data
             })
             .catch((error) => {
