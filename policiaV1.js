@@ -62,7 +62,7 @@ async function completedForm (captchaText = null) {
             await driver.sleep(1000).then(()=>{
                 driver.takeScreenshot().then(
                     (image, err) => {
-                        fs.writeFile('images/policia/' + nameScreen + '.png', image, 'base64', function(error) {
+                        fs.writeFile('image/policia/' + nameScreen, image, 'base64', function(error) {
                             if(error!=null)
                                 console.log('Error occured while saving screenshot' + error)
                         })
