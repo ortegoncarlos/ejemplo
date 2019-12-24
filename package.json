@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/ortegoncarlos/ejemplo#readme",
   "dependencies": {
+    "anticaptcha": "^2.0.3",
     "chromedriver": "^78.0.1",
     "selenium-webdriver": "^4.0.0-alpha.5"
   }
