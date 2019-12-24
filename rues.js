@@ -65,12 +65,7 @@ function getSolve (taskId) {
             let webElement = driver.findElement(By.id("g-recaptcha-response"));
             let script = "arguments[0].innerHTML='" + d.solution.gRecaptchaResponse + "'";
             driver.executeScript(script, webElement).then(() => {
-                /*driver.executeScript(
-                    ()=>{
-                        console.log(document.forms);
-                        document.forms[1].submit();
-                    }
-                )*/
+                driver.executeScript('document.forms[1].submit()');
             });
             // return d;
         }
