@@ -42,6 +42,7 @@ class Vision {
             .documentTextDetection(request)
             .then(response => {
                 let res = response.shift();
+                //return res;
                 return res.fullTextAnnotation.text;
             })
             .catch(err => {

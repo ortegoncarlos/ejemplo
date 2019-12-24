@@ -21,8 +21,10 @@
   },
   "homepage": "https://github.com/ortegoncarlos/ejemplo#readme",
   "dependencies": {
+    "@google-cloud/vision": "^1.7.2",
     "anticaptcha": "^2.0.3",
     "chromedriver": "^78.0.1",
+    "pdf2json": "^1.1.8",
     "selenium-webdriver": "^4.0.0-alpha.5"
   }
 }
