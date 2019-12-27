@@ -95,6 +95,6 @@ async function response () {
                     console.log(err);
                 });
             }
-        ).then(() => { driver.quit() })
+        ).then(() => { driver.quit(); })
     });
 }
