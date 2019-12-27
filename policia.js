@@ -49,7 +49,8 @@ async function completedForm () {
             )
         }).then( solvedCaptcha );
     } catch (e) {
-        console.log(e)
+        await driver.quit();
+        await run();
     }
 }
 
@@ -94,6 +95,6 @@ async function response () {
                     console.log(err);
                 });
             }
-        );
-    }).then(() => { driver.quit() })
+        ).then(() => { driver.quit() })
+    });
 }
