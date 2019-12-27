@@ -8,11 +8,11 @@ const {Builder, By, Key, until} = require('selenium-webdriver');
 const path = require('chromedriver').path;
 const fs = require('fs');
 const Vision = require('./tools/vision');
-let nameScreen = `${ id + new Date() }.jpg`;
+let nameScreen = `${ id + ' - ' + new Date().toDateString() }.jpg`;
 let driver = new Builder().forBrowser('chrome').build();
 
 /** call functions **/
-run().catch(console.error)
+run().catch(console.error);
 
 /**
  * function initial
@@ -34,12 +34,11 @@ async function run () {
 }
 
 /**
- * function per complete form
+ * function to complete form
  * @returns {Promise<void>}
  */
-async function completedForm (captchaText = null) {
+async function completedForm () {
     try {
-        // await driver.wait(until.elementLocated(By.name('cedulaInput')), 1200).sendKeys("80076057")
         await driver.wait(until.elementLocated(By.name('cedulaInput')), 3200).sendKeys('' + id);
         await driver.wait(until.elementLocated(By.id('capimg')), 1200).then(() => {
             driver.executeScript(
@@ -48,30 +47,53 @@ async function completedForm (captchaText = null) {
                     el.parentNode.removeChild(el);
                 }
             )
-        }).then(() => {
-            driver.executeScript(
-                ()=>{
-                    let el = document.getElementById("j_idt20");
-                    el.removeAttribute("onclick");
-                }
-            ).then(
-                async function (e) {
-                    driver.findElement(By.id('capimg')).takeScreenshot().then(image => {
-                        const visionApi = new Vision(image, 'buffer');
-                        visionApi.getText().then(e => {
-                            console.log(e)
-                            /*driver.sleep(1000).then(() => {
-                                driver.executeScript("document.getElementById('textcaptcha').value = '"+e+"'");
-                            })*/
-                            // no entiendo por que si recarga la pagina
-                            driver.findElement(By.id('textcaptcha')).sendKeys(e);
-                        });
-                    })
-                }
-            )
-        });
+        }).then( solvedCaptcha );
     } catch (e) {
         console.log(e)
     }
+}
 
+/**
+ * solved captcha by google vision
+ * @returns {Promise<void>}
+ */
+async function solvedCaptcha () {
+    await driver.findElement(By.id('capimg')).takeScreenshot().then(image => {
+        const visionApi = new Vision(image, 'buffer');
+        visionApi.getText().then(e => {
+            e = e.replace(/\s/g, "");
+            driver.findElement(By.id('textcaptcha')).sendKeys(e).then(() => {
+                driver.findElement(By.id('j_idt19')).click().then( checkRedirection )
+            })
+        });
+    });
+}
+
+/**
+ * Check form status
+ * @returns {Promise<void>}
+ */
+async function checkRedirection () {
+    await driver.sleep(2000);
+    await driver.findElement(By.className('ui-messages-warn-detail')).then( () => {
+        driver.findElement(By.id('textcaptcha')).clear().then(() => {
+            solvedCaptcha();
+        });
+    }).catch( response );
+}
+
+/**
+ * function to answer query
+ * @returns {Promise<void>}
+ */
+async function response () {
+    await driver.sleep(1000).then(()=>{
+        driver.takeScreenshot().then(
+            (image, err) => {
+                fs.writeFile('image/policia/' + nameScreen, image, 'base64', function(err) {
+                    console.log(err);
+                });
+            }
+        );
+    })
 }
