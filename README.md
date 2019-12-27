@@ -4,4 +4,6 @@ ejemplo de webscraping
 Para usarlo deben primero instalar las librerias npm i y despues debene instalar el chromdriver entranda node_modules/chromedriver y ejecutando node index
 
 - policia
-run -> node policia #numeroQueBuscar
+run -> node policia #cedulaQueBuscar
+- rues
+run -> node rues #nitQueBuscar
