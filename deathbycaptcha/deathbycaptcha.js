@@ -4,7 +4,7 @@ Death by Captcha HTTP and Socket API clients.
 
 There are two types of Death by Captcha (DBC hereinafter) API: HTTP and
 Socket ones.  Both offer the same functionalily, with the socket API
-sporting faster responses and using way less connections.
+sporting faster result and using way less connections.
 
 To access the Socket API, use SocketClient class; for the HTTP API, use
 HttpClient class.

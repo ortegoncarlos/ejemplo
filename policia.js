@@ -8,8 +8,9 @@ const {Builder, By, Key, until} = require('selenium-webdriver');
 const path = require('chromedriver').path;
 const fs = require('fs');
 const Vision = require('./tools/vision');
-let nameScreen = `${ id + ' - ' + new Date().toDateString() }.jpg`;
-let driver = new Builder().forBrowser('chrome').build();
+let nameScreen = `image/policia/${ id + ' - ' + new Date().toDateString() }.jpg`;
+let jsonResponse = `result/policia/${ id + ' - ' + new Date().toDateString() }.json`;
+let driver = [];
 
 /** call functions **/
 run().catch(console.error);
@@ -19,6 +20,7 @@ run().catch(console.error);
  * @returns {Promise<void>}
  */
 async function run () {
+    driver = new Builder().forBrowser('chrome').build();
     try {
         await driver.get('https://antecedentes.policia.gov.co:7005/WebJudicial/index.xhtml');
         await driver.wait(until.elementLocated(By.name('aceptaOption')), 1000);
@@ -89,12 +91,34 @@ async function checkRedirection () {
  */
 async function response () {
     await driver.sleep(1000).then(()=>{
-        driver.takeScreenshot().then(
+        driver.findElement(By.id('form:j_idt8')).takeScreenshot().then(
             (image, err) => {
-                fs.writeFile('image/policia/' + nameScreen, image, 'base64', function(err) {
-                    console.log(err);
+                const visionApi = new Vision(image, 'buffer');
+                visionApi.getText().then(e => {
+                    fs.writeFile(nameScreen, image, 'base64', function(err) {
+                        console.log(err);
+                    });
+                    console.log(e);
+                    let resultJson = {
+                        'policia': {
+                            'completed': true,
+                            'timestamp': new Date().getTime(),
+                            'screen': nameScreen
+                        }
+                    };
+                    if ( e.search('NO TIENE ASUNTOS PENDIENTES CON LAS AUTORIDADES JUDICIALES') >= 0 ) {
+                        resultJson['policia']['alert'] = null;
+                    } else {
+                        resultJson['policia']['alert'] = 'antecedentes';
+                        resultJson['policia']['report'] = e;
+                    }
+                    fs.writeFile(jsonResponse, JSON.stringify(resultJson), function (error) {
+                        if (error != null)
+                            console.log('Error occured while saving JSON' + error)
+                    });
                 });
             }
-        ).then(() => { driver.quit(); })
+        )
+        //.then(() => { driver.quit(); })
     });
 }
