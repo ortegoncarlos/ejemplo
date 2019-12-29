@@ -51,8 +51,7 @@ async function completedForm () {
             )
         }).then( solvedCaptcha );
     } catch (e) {
-        await driver.quit();
-        await run();
+        await restart();
     }
 }
 
@@ -116,9 +115,16 @@ async function response () {
                         if (error != null)
                             console.log('Error occured while saving JSON' + error)
                     });
-                });
+                }).then(() => { driver.quit(); });
             }
-        )
-        //.then(() => { driver.quit(); })
+        ).catch( restart );
     });
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+async function restart() {
+    await driver.quit();
+    await run();
 }
