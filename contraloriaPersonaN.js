@@ -8,7 +8,7 @@ let chrome = require('selenium-webdriver/chrome');
 var driver = new Builder()
     .forBrowser('chrome')
     .setChromeOptions(new chrome.Options().setUserPreferences(
-        { "download.default_directory": CONSTANTS.DOWNLOADS_PATH }
+        { "download.default_directory": CONSTANTS.DOWNLOADS_PATH_BASE + CONSTANTS.DOWNLOADS_PATH_FOLDER_CONTRALORIA }
     ))
     .build();
 
@@ -66,81 +66,76 @@ let main = async () => {
     await main()
 })();
 
-function getSolve(taskId) {
+async function getSolve(taskId) {
     const res = antiCap.getKeyCaptchaResolved(taskId);
     res.then(d => {
-        console.log(d)
-        if (d.status === 'processing') {
-            getSolve(taskId);
-        } else {
-            //Captcha resuelto. Asignarlo en el elemento HTML que lo solicita.
-            let webElement = driver.findElement(By.id("g-recaptcha-response"));
-            let script = "arguments[0].innerHTML='" + d.solution.gRecaptchaResponse + "'";
-            //Permitir que se asigne los valores esperados por el captcha y ejecutar lo de
-            //dentro de la función.
-            driver.executeScript(script, webElement).then(() => {
-                //Hacer click en el botón para descargar PDF.
-                driver.findElement(By.id("btnBuscar")).click().then(() => {
-                    setTimeout(async function () {
-                        await writeJSON(CONSTANTS.TEST_CEDULA);
-                        await writeTXT(CONSTANTS.TEST_CEDULA);
-                        //await writeWithVision(CONSTANTS.TEST_CEDULA)
-                    }, 2000);
-                })
-                //takeScreenShot();
-            });
-        }
-    })
-}
-
-//Escribir en TXT el PDF
-function writeJSON(fileKey) {
-    let pdfParser = new PDFParser(this, 1);
-    pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError));
-    pdfParser.on("pdfParser_dataReady", pdfData => {
-        fs.writeFile("./imgs/contraloriaPersonaN/" + fileKey + ".json", JSON.stringify(pdfData), function (error) {
-            if (error != null)
-                console.log('Error occured while saving JSON' + error)
-        }
-        );
-    });
-    pdfParser.loadPDF("./imgs/contraloriaPersonaN/" + fileKey + ".pdf");
-}
-
-//Escribir en TXT el PDF
-function writeTXT(fileKey) {
-    let pdfParser = new PDFParser(this, 1);
-    pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError));
-    pdfParser.on("pdfParser_dataReady", pdfData => {
-        fs.writeFile("./imgs/contraloriaPersonaN/" + fileKey + ".txt", pdfParser.getRawTextContent(), function (error) {
-            if (error != null)
-                console.log('Error occured while saving TXT' + error)
-        }
-        );
-    });
-    pdfParser.loadPDF("./imgs/contraloriaPersonaN/" + fileKey + ".pdf");
-}
-
-//VISION no funciona de manera local con PDF. Validar estrategia subiendo a Bucket
-//O utilizar otra opción
-async function writeWithVision(fileKey) {
-    let visionDoc = await new vision('./imgs/contraloriaPersonaN/' + fileKey + '.pdf', 'buffer');
-    console.log(await visionDoc.getText())
-}
-
-
-function takeScreenShot() {
-    //Tomar Screenshot y guardarlo en la ruta definida en constantes.
-    driver.sleep(1000).then(() => {
-        /*
-        driver.findElement(By.id('PATH_DEL_ELEMENTO_HTML')).takeScreenshot().then(
-            (image, err) => {
-                fs.writeFile('image/rues/' + nameScreen, image, 'base64', function (error) {
-                    if (error != null)
-                        console.log('Error occured while saving screenshot' + error)
-                })
+        try {
+            if (d.status === 'processing') {
+                console.log("Procesando Captcha: ", d)
+                getSolve(taskId);
+            } else {
+                console.log("Captcha Resuelto, JSON respuesta: ", d)
+                //Captcha resuelto. Asignarlo en el elemento HTML que lo solicita.
+                let webElement = driver.findElement(By.id("g-recaptcha-response"));
+                let script = "arguments[0].innerHTML='" + d.solution.gRecaptchaResponse + "'";
+                //Permitir que se asigne los valores esperados por el captcha y ejecutar lo de
+                //dentro de la función.
+                driver.executeScript(script, webElement).then(async function () {
+                    //Hacer click en el botón para descargar PDF.
+                    await driver.findElement(By.id("btnBuscar")).click().then(() => {
+                        setTimeout(async function () {
+                            writeTXT(CONSTANTS.TEST_CEDULA);
+                            driver.quit()
+                            //await writeWithVision(CONSTANTS.TEST_CEDULA)
+                        }, 2000);
+                    })
+                    //takeScreenShot();
+                });
             }
-        )
-        */
+        }
+        catch (e) {
+            console.log("Error al recibir respuesta del CaptchaSolver. Intentar de nuevo.", e)
+        }
     })
+}
+
+//Escribir en TXT el PDF
+async function writeTXT(fileKey) {
+    let pdfParser = new PDFParser(this, 1);
+    let jsonReport = {};
+    await pdfParser.loadPDF(CONSTANTS.DOWNLOADS_PATH_BASE + CONSTANTS.DOWNLOADS_PATH_FOLDER_CONTRALORIA + CONSTANTS.FOLDER_PATH_SEPARATOR + fileKey + ".pdf");
+    await pdfParser.on("pdfParser_dataError", async function (jsonReport) { await console.error(errData.parserError) }
+    );
+    await pdfParser.on("pdfParser_dataReady", async function (jsonReport) {
+        //Remueve todos los saltos de línea del texto:
+        let reportText = pdfParser.getRawTextContent().replace(/(\r\n|\n|\r)/gm, " ")
+        let actualTimeStamp = Date.now();
+
+        //Si el reporte del usuario consultado es negativo.
+        if (reportText.includes("NO SE ENCUENTRA REPORTADO COMO RESPONSABLE FISCAL")) {
+            jsonReport = {
+                procuraduria: {
+                    completed: true,
+                    timestamp: actualTimeStamp,
+                    alert: null,
+                    screen: CONSTANTS.DOWNLOADS_PATH_BASE + CONSTANTS.DOWNLOADS_PATH_FOLDER_CONTRALORIA + CONSTANTS.FOLDER_PATH_SEPARATOR + fileKey + ".pdf"
+                }
+            }
+        }
+        //Si el reporte del usuario consultado es positivo.
+        else {
+            jsonReport = {
+                procuraduria: {
+                    completed: true,
+                    timestamp: actualTimeStamp,
+                    alert: "carcel",
+                    screen: CONSTANTS.DOWNLOADS_PATH_BASE + CONSTANTS.DOWNLOADS_PATH_FOLDER_CONTRALORIA + CONSTANTS.FOLDER_PATH_SEPARATOR + fileKey + ".pdf",
+                    report: reportText
+                }
+            }
+
+        }
+        console.log("Análisis del reporte: ", jsonReport)
+    });
+    return jsonReport;
 }
