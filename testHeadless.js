@@ -3,15 +3,7 @@ let webdriver = require('selenium-webdriver');
 const {Builder, By, Key, until} = require('selenium-webdriver');
 let chrome = require('selenium-webdriver/chrome');
 const fs = require('fs');
-
-let chromeCapabilities = webdriver.Capabilities.chrome();
 let options = new chrome.Options();
-//setting chrome options to start the browser fully maximized
-let chromeOptions = {
-    'args': ['--headless', '--start-maximized']
-};
-options.addArguments('--start-maximized')
-chromeCapabilities.set('chrome_options', chromeOptions);
 
 // let driver = new webdriver.Builder().withCapabilities(chromeCapabilities).build();
 let driver = new webdriver.Builder().withCapabilities(options.headless().windowSize({width: 1700, height: 2500})).build();
