@@ -9,7 +9,7 @@ const path = require('chromedriver').path;
 const fs = require('fs');
 const Vision = require('./tools/vision');
 let nameScreen = `image/policia/${ id + ' - ' + new Date().toDateString() }.jpg`;
-let jsonResponse = `result/policia/${ id + ' - ' + new Date().toDateString() }.json`;
+let jsonResponse = `result/policia - ${ id + ' - ' + new Date().toDateString() }.json`;
 let driver = [];
 
 /** call functions **/
