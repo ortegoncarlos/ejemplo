@@ -38,7 +38,7 @@ let main = async () => {
                             await cedula.sendKeys(CONSTANTS.TEST_CEDULA)
                             //Ir al Frame del Captcha
                             await driver.findElement(By.className('g-recaptcha')).getAttribute('data-sitekey').then((key) => {
-                                antiCap = new antiCaptcha('https://cfiscal.contraloria.gov.co/SiborWeb/Certificados/CertificadoPersonaNatural.aspx', key);
+                                antiCap = new antiCaptcha(CONSTANTS.URL_CONTRALORIA_PERSONA_NATURAL, key);
                                 const taskId = antiCap.createTaskIdApi();
                                 taskId.then(e => {
                                     driver.sleep(15000).then(async () => {
