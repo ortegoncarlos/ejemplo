@@ -14,7 +14,7 @@ class CaptchaV2 {
         const axios = require('axios');
 
         return axios.post('https://api.anti-captcha.com/createTask', {
-            "clientKey": "e2513609e3b73ad96181a9370e517bb6",
+            "clientKey": "###",
             "task": {
                 "type": "NoCaptchaTaskProxyless",
                 "websiteURL": this.page,
@@ -35,7 +35,7 @@ class CaptchaV2 {
         const axios = require('axios');
 
         return axios.post('https://api.anti-captcha.com/getTaskResult', {
-            "clientKey":"e2513609e3b73ad96181a9370e517bb6",
+            "clientKey":"###",
             "taskId": taskId
         })
             .then((res) => {

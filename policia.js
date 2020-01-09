@@ -11,16 +11,25 @@ const Vision = require('./tools/vision');
 let nameScreen = `image/policia/${ id + ' - ' + new Date().toDateString() }.jpg`;
 let jsonResponse = `result/policia - ${ id + ' - ' + new Date().toDateString() }.json`;
 let driver = [];
-
+let resultJson = {
+                'policia': {
+                    'completed': false,
+                    'timestamp': new Date().getTime(),
+                }
+            };
 /** call functions **/
 run().catch(console.error);
+
+async function run (){
+    driver = new Builder().forBrowser('chrome').build();
+    startScan()
+}
 
 /**
  * function initial
  * @returns {Promise<void>}
  */
-async function run () {
-    driver = new Builder().forBrowser('chrome').build();
+async function startScan () {
     try {
         await driver.get('https://antecedentes.policia.gov.co:7005/WebJudicial/index.xhtml');
         await driver.wait(until.elementLocated(By.name('aceptaOption')), 1000);
@@ -41,15 +50,10 @@ async function run () {
  */
 async function completedForm () {
     try {
-        await driver.wait(until.elementLocated(By.name('cedulaInput')), 3200).sendKeys('' + id);
+        await driver.wait(until.elementLocated(By.name('cedulaInput')), 3200).sendKeys(id);
         await driver.wait(until.elementLocated(By.id('capimg')), 1200).then(() => {
-            driver.executeScript(
-                ()=>{
-                    let el = document.querySelector(".preloader");
-                    el.parentNode.removeChild(el);
-                }
-            )
-        }).then( solvedCaptcha );
+            removeloader()
+        }).then( solveCaptcha );
     } catch (e) {
         await restart();
     }
@@ -59,29 +63,44 @@ async function completedForm () {
  * solved captcha by google vision
  * @returns {Promise<void>}
  */
-async function solvedCaptcha () {
+async function solveCaptcha () {
     await driver.findElement(By.id('capimg')).takeScreenshot().then(image => {
         const visionApi = new Vision(image, 'buffer');
-        visionApi.getText().then(e => {
-            e = e.replace(/\s/g, "");
-            driver.findElement(By.id('textcaptcha')).sendKeys(e).then(() => {
-                driver.findElement(By.id('j_idt19')).click().then( checkRedirection )
-            })
-        });
+        visionApi.getText().then(async captchaSolved => {
+            if (typeof captchaSolved === 'undefined'){ 
+                throw Error ('Error en Vision Api')
+            }
+            else{
+                captchaSolved = captchaSolved.replace(/\s/g, "");
+                await driver.findElement(By.id('textcaptcha')).sendKeys(captchaSolved)
+                await driver.findElement(By.id('j_idt19')).click()
+                await driver.sleep(500).then( checkRedirection )
+        
+            }
+            
+        }).catch((error)=>{console.error(error)} );
     });
 }
 
+function removeloader(){
+    driver.executeScript(
+        ()=>{
+            let el = document.querySelector(".preloader");
+            el.parentNode.removeChild(el);
+        }
+    )
+}
 /**
  * Check form status
  * @returns {Promise<void>}
  */
 async function checkRedirection () {
-    await driver.sleep(2000);
     await driver.findElement(By.className('ui-messages-warn-detail')).then( () => {
         driver.findElement(By.id('textcaptcha')).clear().then(() => {
-            solvedCaptcha();
+            solveCaptcha();
         });
-    }).catch( response );
+    })
+    .catch( response )
 }
 
 /**
@@ -89,42 +108,56 @@ async function checkRedirection () {
  * @returns {Promise<void>}
  */
 async function response () {
-    await driver.sleep(1000).then(()=>{
-        driver.findElement(By.id('form:j_idt8')).takeScreenshot().then(
-            (image, err) => {
-                const visionApi = new Vision(image, 'buffer');
-                visionApi.getText().then(e => {
+    await driver.wait(until.elementLocated(By.id('form:j_idt8')), 500)
+    .then(
+        async ()=>{
+            await driver.sleep(500);
+            await driver.takeScreenshot().then(
+                async (image, err) => {
                     fs.writeFile(nameScreen, image, 'base64', function(err) {
-                        console.log(err);
-                    });
-                    console.log(e);
-                    let resultJson = {
-                        'policia': {
-                            'completed': true,
-                            'timestamp': new Date().getTime(),
-                            'screen': nameScreen
+                            console.log(err);
+                        });
+                    const visionApiText = new Vision(image, 'buffer');
+                    await visionApiText.getText().then(e => {
+                        
+                        console.log(e);
+                        let resultJson = {
+                            'policia': {
+                                'completed': true,
+                                'timestamp': new Date().getTime(),
+                                'screen': nameScreen
+                            }
+                        };
+
+                        if ( e.search('NO TIENE ASUNTOS PENDIENTES CON LAS AUTORIDADES JUDICIALES') >= 0 ) {
+                            resultJson['policia']['alert'] = null;
+                        } else {
+                            resultJson['policia']['alert'] = 'antecedentes';
+                            resultJson['policia']['report'] = e;
                         }
-                    };
-                    if ( e.search('NO TIENE ASUNTOS PENDIENTES CON LAS AUTORIDADES JUDICIALES') >= 0 ) {
-                        resultJson['policia']['alert'] = null;
-                    } else {
-                        resultJson['policia']['alert'] = 'antecedentes';
-                        resultJson['policia']['report'] = e;
-                    }
-                    fs.writeFile(jsonResponse, JSON.stringify(resultJson), function (error) {
-                        if (error != null)
-                            console.log('Error occured while saving JSON' + error)
+                        fs.writeFile(jsonResponse, JSON.stringify(resultJson), function (error) {
+                            if (error != null)
+                                console.log('Error occured while saving JSON' + error)
+                        });
                     });
-                }).then(() => { driver.quit(); });
-            }
-        ).catch( restart );
-    });
+                }
+            ).then(
+            ()=>{terminate()}
+            )
+        }
+        )
+    .catch(restart)
 }
 
 /**
  * @returns {Promise<void>}
  */
 async function restart() {
+    await startScan();
+}
+
+async function terminate(){
     await driver.quit();
-    await run();
+    //send info to firebase
+    await process.kill(process.pid);
 }
