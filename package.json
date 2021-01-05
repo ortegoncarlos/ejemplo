@@ -22,7 +22,7 @@
   "homepage": "https://github.com/ortegoncarlos/ejemplo#readme",
   "dependencies": {
     "@google-cloud/vision": "^1.7.2",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "chromedriver": "^78.0.1",
     "selenium-webdriver": "^4.0.0-alpha.5"
   }
